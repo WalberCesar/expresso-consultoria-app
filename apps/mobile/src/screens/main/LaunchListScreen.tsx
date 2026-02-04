@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,41 +6,31 @@ import {
   StyleSheet,
   TouchableOpacity,
   StatusBar,
+  RefreshControl,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { withObservables } from '@nozbe/watermelondb/react';
 import { database } from '../../db';
 import { Registro } from '../../db/models/';
+import { syncDatabase } from '../../services/sync.service';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface ListItemProps {
   item: Registro;
 }
 
 function ListItem({ item }: ListItemProps) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'synced':
-        return '#4CAF50';
-      case 'created':
-        return '#FFC107';
-      case 'updated':
-        return '#2196F3';
-      default:
-        return '#9E9E9E';
-    }
+  const getStatusColor = () => {
+    return item.sincronizado ? '#4CAF50' : '#FFC107';
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'synced':
-        return 'checkmark-circle';
-      case 'created':
-        return 'time';
-      case 'updated':
-        return 'sync';
-      default:
-        return 'help-circle';
-    }
+  const getStatusIcon = () => {
+    return item.sincronizado ? 'checkmark-circle' : 'time';
+  };
+
+  const getStatusText = () => {
+    return item.sincronizado ? 'Sincronizado' : 'Pendente';
   };
 
   const formatDate = (date: Date) => {
@@ -64,11 +54,16 @@ function ListItem({ item }: ListItemProps) {
         <View style={styles.itemTypeContainer}>
           <Text style={styles.itemType}>{item.tipo.toUpperCase()}</Text>
         </View>
-        <Ionicons
-          name={getStatusIcon(item._status)}
-          size={20}
-          color={getStatusColor(item._status)}
-        />
+        <View style={styles.statusContainer}>
+          <Ionicons
+            name={getStatusIcon()}
+            size={16}
+            color={getStatusColor()}
+          />
+          <Text style={[styles.statusText, { color: getStatusColor() }]}>
+            {getStatusText()}
+          </Text>
+        </View>
       </View>
       
       <Text style={styles.itemDescription}>{item.descricao}</Text>
@@ -86,6 +81,32 @@ interface LaunchListScreenProps {
 }
 
 function LaunchListScreen({ registros }: LaunchListScreenProps) {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { user } = useAuth();
+
+  const handleRefresh = async () => {
+    if (!user) {
+      Alert.alert('Erro', 'Usuário não autenticado');
+      return;
+    }
+
+    setIsRefreshing(true);
+
+    try {
+      await syncDatabase({
+        database,
+        token: user.token,
+      });
+
+      Alert.alert('Sucesso', 'Dados sincronizados com sucesso!');
+    } catch (error) {
+      console.error('Erro ao sincronizar:', error);
+      Alert.alert('Erro', 'Não foi possível sincronizar os dados');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
@@ -95,6 +116,14 @@ function LaunchListScreen({ registros }: LaunchListScreenProps) {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <ListItem item={item} />}
         contentContainerStyle={styles.listContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            tintColor="#007AFF"
+            colors={['#007AFF']}
+          />
+        }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons name="document-text-outline" size={64} color="#CCC" />
@@ -147,6 +176,15 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 12,
     fontWeight: '600',
+  },
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '500',
   },
   itemDescription: {
     fontSize: 16,
