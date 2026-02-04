@@ -137,12 +137,13 @@ export class SyncService {
                 await trx('foto_registros').insert({
                   uuid: record.id,
                   registro_id: registro.id,
-                  url_foto: record.url_foto,
-                  path_local: record.path_local,
+                  url_foto: record.path_url || record.url_foto || '',
+                  path_local: record.path_url || record.path_local || '',
                   created_at: new Date(record.created_at),
                   updated_at: new Date(record.updated_at)
                 });
               } catch (error) {
+                console.error('Erro ao inserir foto_registro:', error);
                 rejectedIds.push(record.id);
               }
             }
@@ -165,11 +166,12 @@ export class SyncService {
                 await trx('foto_registros')
                   .where('uuid', record.id)
                   .update({
-                    url_foto: record.url_foto,
-                    path_local: record.path_local,
+                    url_foto: record.path_url || record.url_foto || '',
+                    path_local: record.path_url || record.path_local || '',
                     updated_at: new Date(record.updated_at)
                   });
               } catch (error) {
+                console.error('Erro ao atualizar foto_registro:', error);
                 rejectedIds.push(record.id);
               }
             }
@@ -201,7 +203,16 @@ export class SyncService {
           rawRecord[key] = record[key] === 'COMPRA' ? 'entrada' : 
                           record[key] === 'VENDA' ? 'saida' : 
                           record[key].toLowerCase();
-        } else if (record[key] instanceof Date) {
+        }
+        // Mapear path_local do banco para path_url do mobile
+        else if (key === 'path_local' && record[key]) {
+          rawRecord['path_url'] = record[key];
+        }
+        // Mapear url_foto também para path_url se path_local não existir
+        else if (key === 'url_foto' && record[key] && !record.path_local) {
+          rawRecord['path_url'] = record[key];
+        }
+        else if (record[key] instanceof Date) {
           rawRecord[key] = record[key].getTime();
         } else {
           rawRecord[key] = record[key];
