@@ -10,17 +10,23 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { withObservables } from '@nozbe/watermelondb/react';
 import { database } from '../../db';
 import { Registro } from '../../db/models/';
 import { syncDatabase } from '../../services/sync.service';
 import { useAuth } from '../../contexts/AuthContext';
+import { MainStackParamList } from '../../navigation/types';
+
+type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 
 interface ListItemProps {
   item: Registro;
 }
 
 function ListItem({ item }: ListItemProps) {
+  const navigation = useNavigation<NavigationProp>();
   const getStatusColor = () => {
     return item.sincronizado ? '#4CAF50' : '#FFC107';
   };
@@ -49,7 +55,10 @@ function ListItem({ item }: ListItemProps) {
   };
 
   return (
-    <TouchableOpacity style={styles.itemContainer}>
+    <TouchableOpacity 
+      style={styles.itemContainer}
+      onPress={() => navigation.navigate('EditLaunch', { registroId: item.id })}
+    >
       <View style={styles.itemHeader}>
         <View style={styles.itemTypeContainer}>
           <Text style={styles.itemType}>{item.tipo.toUpperCase()}</Text>

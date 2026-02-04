@@ -1,13 +1,16 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import LaunchListScreen from '../screens/main/LaunchListScreen';
 import CreateLaunchScreen from '../screens/main/CreateLaunchScreen';
-import { MainTabParamList } from './types';
+import EditLaunchScreen from '../screens/main/EditLaunchScreen';
+import { MainTabParamList, MainStackParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
+const Stack = createNativeStackNavigator<MainStackParamList>();
 
-export default function MainNavigator() {
+function MainTabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -46,5 +49,25 @@ export default function MainNavigator() {
         }}
       />
     </Tab.Navigator>
+  );
+}
+
+export default function MainNavigator() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="MainTabs"
+        component={MainTabs}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="EditLaunch"
+        component={EditLaunchScreen}
+        options={{
+          headerTitle: 'Editar Lançamento',
+          headerBackTitle: 'Voltar',
+        }}
+      />
+    </Stack.Navigator>
   );
 }
