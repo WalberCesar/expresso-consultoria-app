@@ -1,7 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { UserLoginRequest } from '../types/user.types';
+import { AuthService } from '../services/auth.service';
 
 export class AuthController {
+  private authService: AuthService;
+
+  constructor() {
+    this.authService = new AuthService();
+  }
+
   async handleLogin(
     req: Request<{}, {}, UserLoginRequest>,
     res: Response,
@@ -17,8 +24,17 @@ export class AuthController {
         return;
       }
 
+      const user = await this.authService.findUserByEmail(email);
+
+      if (!user) {
+        res.status(401).json({
+          error: 'Credenciais inválidas'
+        });
+        return;
+      }
+
       res.status(501).json({
-        message: 'Login endpoint - implementação pendente'
+        message: 'Validação de senha - implementação pendente'
       });
     } catch (error) {
       next(error);
