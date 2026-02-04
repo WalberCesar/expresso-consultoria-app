@@ -9,23 +9,30 @@ import {
   StatusBar,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DatePicker from 'react-native-date-picker';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { launchFormSchema, LaunchFormData } from '../../schemas/launchFormSchema';
+import { database } from '../../db';
+import Registro from '../../db/models/Registro';
+import { useAuth } from '../../contexts/AuthContext';
 
 type LaunchType = 'entrada' | 'saida';
 
 export default function CreateLaunchScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [tempDataHora, setTempDataHora] = useState(new Date());
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
 
   const {
     control,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<LaunchFormData>({
     resolver: zodResolver(launchFormSchema),
     defaultValues: {
@@ -35,8 +42,40 @@ export default function CreateLaunchScreen() {
     },
   });
 
-  const onSubmit = (data: LaunchFormData) => {
-    console.log('Form data:', data);
+  const onSubmit = async (data: LaunchFormData) => {
+    if (!user) {
+      Alert.alert('Erro', 'Usuário não autenticado');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await database.write(async () => {
+        await database.get<Registro>('registros').create((registro) => {
+          registro.empresaId = user.empresaId;
+          registro.usuarioId = user.id;
+          registro.tipo = data.tipo;
+          registro.dataHora = data.dataHora;
+          registro.descricao = data.descricao;
+          registro.sincronizado = false;
+        });
+      });
+
+      Alert.alert('Sucesso', 'Lançamento criado com sucesso!', [
+        {
+          text: 'OK',
+          onPress: () => {
+            reset();
+          },
+        },
+      ]);
+    } catch (error) {
+      console.error('Erro ao salvar registro:', error);
+      Alert.alert('Erro', 'Não foi possível salvar o lançamento');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const formatDateTime = (date: Date) => {
@@ -222,10 +261,13 @@ export default function CreateLaunchScreen() {
 
           {/* Submit Button */}
           <TouchableOpacity
-            style={styles.submitButton}
+            style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
             onPress={handleSubmit(onSubmit)}
+            disabled={isSubmitting}
           >
-            <Text style={styles.submitButtonText}>Salvar Lançamento</Text>
+            <Text style={styles.submitButtonText}>
+              {isSubmitting ? 'Salvando...' : 'Salvar Lançamento'}
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -369,6 +411,10 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 12,
+  },
+  submitButtonDisabled: {
+    backgroundColor: '#B0C4DE',
+    opacity: 0.6,
   },
   submitButtonText: {
     fontSize: 18,
