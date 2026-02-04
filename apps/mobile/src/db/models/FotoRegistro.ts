@@ -10,10 +10,10 @@ export default class FotoRegistro extends Model {
     registros: { type: 'belongs_to', key: 'registro_id' },
   };
 
-  @field('registro_id') registroId!: string;
-  @text('path_url') pathUrl!: string;
-  @readonly @date('created_at') createdAt!: Date;
-  @date('updated_at') updatedAt!: Date;
+  @field('registro_id') registroId: string;
+  @text('path_url') pathUrl: string;
+  @readonly @date('created_at') createdAt: Date;
+  @date('updated_at') updatedAt: Date;
 
-  @relation('registros', 'registro_id') registro!: Registro;
+  @relation('registros', 'registro_id') registro: Registro;
 }

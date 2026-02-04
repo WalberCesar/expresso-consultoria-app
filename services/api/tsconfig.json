@@ -5,13 +5,9 @@
     "lib": ["ES2022"],
 
     /* Modules */
-    "module": "commonjs",
+    "module": "node16",
     "rootDir": "./src",
-    "moduleResolution": "node",
-    "baseUrl": "./",
-    "paths": {
-      "@/*": ["src/*"]
-    },
+    "moduleResolution": "node16",
     "resolveJsonModule": true,
 
     /* Emit */

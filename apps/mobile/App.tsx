@@ -5,9 +5,9 @@ import AppNavigator from './src/navigation/AppNavigator';
 import { testDatabaseSetup } from './src/db/__tests__/database.test';
 
 export default function App() {
-  useEffect(() => {
-    testDatabaseSetup();
-  }, []);
+  // useEffect(() => {
+  //   testDatabaseSetup();
+  // }, []);
 
   return (
     <AuthProvider>
