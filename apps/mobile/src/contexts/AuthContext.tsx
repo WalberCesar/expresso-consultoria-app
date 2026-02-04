@@ -1,5 +1,8 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authService } from '../services/auth.service';
+
+const USER_STORAGE_KEY = '@expresso:user';
 
 interface User {
   id: number;
@@ -11,6 +14,7 @@ interface User {
 interface AuthContextData {
   user: User | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   signIn: (login: string, senha: string) => Promise<void>;
   signOut: () => void;
 }
@@ -23,6 +27,26 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadUserFromStorage();
+  }, []);
+
+  const loadUserFromStorage = async () => {
+    try {
+      const storedUser = await AsyncStorage.getItem(USER_STORAGE_KEY);
+      
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser) as User;
+        setUser(parsedUser);
+      }
+    } catch (error) {
+      console.error('Error loading user from storage:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const signIn = async (login: string, senha: string) => {
     try {
@@ -35,6 +59,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         token: response.token,
       };
 
+      await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
       setUser(userData);
     } catch (error) {
       console.error('Login error:', error);
@@ -42,8 +67,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const signOut = () => {
-    setUser(null);
+  const signOut = async () => {
+    try {
+      await AsyncStorage.removeItem(USER_STORAGE_KEY);
+      setUser(null);
+    } catch (error) {
+      console.error('Error removing user from storage:', error);
+    }
   };
 
   return (
@@ -51,6 +81,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       value={{
         user,
         isAuthenticated: !!user,
+        isLoading,
         signIn,
         signOut,
       }}
