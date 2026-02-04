@@ -1,5 +1,6 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
 import authRoutes from './routes/auth.routes';
+import userRoutes from './routes/user.routes';
 
 interface AppError extends Error {
   statusCode?: number;
@@ -45,6 +46,9 @@ class App {
 
     // Authentication routes
     this.app.use('/api/auth', authRoutes);
+
+    // User routes (protected)
+    this.app.use('/api/users', userRoutes);
   }
 
   private initializeErrorHandling(): void {

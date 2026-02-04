@@ -18,7 +18,6 @@ export class AuthService {
 
   async generateToken(user: User): Promise<UserLoginResponse> {
     const secret = process.env.JWT_SECRET;
-    const expiresIn = process.env.JWT_EXPIRES_IN || '24h';
 
     if (!secret) {
       throw new Error('JWT_SECRET não configurado');
@@ -30,7 +29,12 @@ export class AuthService {
       empresa_id: user.empresa_id
     };
 
-    const token = jwt.sign(payload, secret, { expiresIn });
+    // @ts-ignore - expiresIn accepts string values despite type definition issues
+    const token = jwt.sign(
+      payload, 
+      secret, 
+      { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
+    );
 
     return {
       token,

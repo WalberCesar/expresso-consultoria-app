@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-interface JwtPayload {
+export interface JwtPayload {
   id: number;
   email: string;
   empresa_id: number;
@@ -41,9 +41,16 @@ export const authMiddleware = (
 
     const [scheme, token] = parts;
 
-    if (!/^Bearer$/i.test(scheme)) {
+    if (!scheme || !/^Bearer$/i.test(scheme)) {
       res.status(401).json({
         error: 'Token mal formatado'
+      });
+      return;
+    }
+
+    if (!token) {
+      res.status(401).json({
+        error: 'Token não fornecido'
       });
       return;
     }
