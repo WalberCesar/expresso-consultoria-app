@@ -10,7 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { withObservables } from '@nozbe/watermelondb/react';
 import { database } from '../../db';
-import { Registro } from '../../db/models/Registro';
+import { Registro } from '../../db/models/';
 
 interface ListItemProps {
   item: Registro;
