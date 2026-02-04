@@ -48,9 +48,14 @@ export class SyncController {
         return;
       }
 
-      res.status(501).json({
-        message: 'Push endpoint - implementação pendente'
-      });
+      const { changes } = req.body;
+
+      const result = await this.syncService.pushChanges(
+        changes,
+        req.user.empresa_id
+      );
+
+      res.status(200).json(result);
     } catch (error) {
       next(error);
     }
