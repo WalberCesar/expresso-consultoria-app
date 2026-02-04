@@ -217,6 +217,7 @@ export default function CreateLaunchScreen() {
                   <Text style={styles.errorText}>{errors.dataHora.message}</Text>
                 )}
                 <DatePicker
+                
                   modal
                   open={showDatePicker}
                   date={tempDataHora}
@@ -271,7 +272,7 @@ export default function CreateLaunchScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-      />
+      
     </KeyboardAvoidingView>
   );
 }
