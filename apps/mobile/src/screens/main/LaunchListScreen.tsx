@@ -97,7 +97,7 @@ function LaunchListScreen({ registros }: LaunchListScreenProps) {
         database,
         token: user.token,
       });
-
+    
       Alert.alert('Sucesso', 'Dados sincronizados com sucesso!');
     } catch (error) {
       console.error('Erro ao sincronizar:', error);

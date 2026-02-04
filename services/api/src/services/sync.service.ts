@@ -72,12 +72,17 @@ export class SyncService {
           if (tableName === 'registros') {
             for (const record of tableChanges.created) {
               try {
+                // Mapear tipo do mobile para o banco (entrada -> COMPRA, saida -> VENDA)
+                const tipoMapeado = record.tipo === 'entrada' ? 'COMPRA' : 
+                                   record.tipo === 'saida' ? 'VENDA' : 
+                                   record.tipo.toUpperCase();
+                
                 // Multi-tenancy: empresa_id sempre forçado do token JWT
                 await trx('registros').insert({
                   uuid: record.id,
                   empresa_id: empresaId,
                   usuario_id: record.usuario_id,
-                  tipo: record.tipo,
+                  tipo: tipoMapeado,
                   data_hora: new Date(record.data_hora),
                   descricao: record.descricao,
                   sincronizado: true,
@@ -85,19 +90,25 @@ export class SyncService {
                   updated_at: new Date(record.updated_at)
                 });
               } catch (error) {
+                console.error('Erro ao inserir registro:', error);
                 rejectedIds.push(record.id);
               }
             }
 
             for (const record of tableChanges.updated) {
               try {
+                // Mapear tipo do mobile para o banco
+                const tipoMapeado = record.tipo === 'entrada' ? 'COMPRA' : 
+                                   record.tipo === 'saida' ? 'VENDA' : 
+                                   record.tipo.toUpperCase();
+                
                 // Multi-tenancy: update apenas em registros da própria empresa
                 await trx('registros')
                   .where('uuid', record.id)
                   .where('empresa_id', empresaId)
                   .update({
                     usuario_id: record.usuario_id,
-                    tipo: record.tipo,
+                    tipo: tipoMapeado,
                     data_hora: new Date(record.data_hora),
                     descricao: record.descricao,
                     sincronizado: true,
@@ -185,7 +196,12 @@ export class SyncService {
           return;
         }
         
-        if (record[key] instanceof Date) {
+        // Mapear tipo do banco para o mobile (COMPRA -> entrada, VENDA -> saida)
+        if (key === 'tipo' && record[key]) {
+          rawRecord[key] = record[key] === 'COMPRA' ? 'entrada' : 
+                          record[key] === 'VENDA' ? 'saida' : 
+                          record[key].toLowerCase();
+        } else if (record[key] instanceof Date) {
           rawRecord[key] = record[key].getTime();
         } else {
           rawRecord[key] = record[key];

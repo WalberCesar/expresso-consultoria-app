@@ -53,9 +53,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const response = await authService.login({ login, senha });
       
       const userData: User = {
-        id: response.usuario.id,
-        nome: response.usuario.nome,
-        empresaId: response.usuario.empresa_id,
+        id: response.user.id,
+        nome: response.user.nome,
+        empresaId: response.user.empresa_id,
         token: response.token,
       };
 
@@ -81,9 +81,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       value={{
         user,
         isAuthenticated: !!user,
-        isLoading,
         signIn,
-        signOut,
+        signOut,isLoading
       }}
     >
       {children}

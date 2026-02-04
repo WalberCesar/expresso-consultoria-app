@@ -1,15 +1,17 @@
 import App from './app';
 
-const PORT = process.env.PORT || 3000;
+const PORT = parseInt(process.env.PORT || '3000', 10);
+const HOST = '0.0.0.0'; // Permite conexões de qualquer interface de rede
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
 const appInstance = new App();
 const server = appInstance.getApp();
 
-server.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`🚀 Server is running on ${HOST}:${PORT}`);
   console.log(`📝 Environment: ${NODE_ENV}`);
   console.log(`🏥 Health check: http://localhost:${PORT}/health`);
+  console.log(`🌐 Network access: http://192.168.100.28:${PORT}/health`);
 });
 
 // Handle unhandled promise rejections

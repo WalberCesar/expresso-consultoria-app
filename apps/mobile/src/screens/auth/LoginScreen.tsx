@@ -34,8 +34,8 @@ export default function LoginScreen() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      login: '',
-      senha: '',
+      login: 'usuario.a@empresaa.com',
+      senha: 'senha123',
     },
   });
 
@@ -81,7 +81,7 @@ export default function LoginScreen() {
                     placeholder="Digite seu login"
                     onBlur={onBlur}
                     onChangeText={onChange}
-                    value={value}
+                    value={"usuario.a@empresaa.com"}
                     autoCapitalize="none"
                     editable={!loading}
                   />
@@ -106,7 +106,7 @@ export default function LoginScreen() {
                     placeholder="Digite sua senha"
                     onBlur={onBlur}
                     onChangeText={onChange}
-                    value={value}
+                    value={"senha123"}
                     secureTextEntry
                     autoCapitalize="none"
                     editable={!loading}

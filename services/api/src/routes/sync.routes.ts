@@ -5,7 +5,7 @@ import { authMiddleware } from '../middlewares/auth.middleware';
 const router = Router();
 const syncController = new SyncController();
 
-router.post('/pull', authMiddleware, (req, res, next) =>
+router.get('/pull', authMiddleware, (req, res, next) =>
   syncController.handlePull(req, res, next)
 );
 

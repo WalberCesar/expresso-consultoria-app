@@ -6,7 +6,7 @@ export interface LoginCredentials {
 }
 
 export interface LoginResponse {
-  usuario: {
+  user: {
     id: number;
     nome: string;
     login: string;
@@ -17,7 +17,20 @@ export interface LoginResponse {
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
-    const response = await api.post<LoginResponse>('/auth/login', credentials);
+    // const payload = {
+    //   email: "usuario.a@empresaa.com",
+    //   senha: "senha123"
+    // };
+
+    const payload = {
+      email: "usuario.b@empresab.com",
+      senha: "senha456"
+    };
+
+    console.log("payload", payload);
+
+    const response = await api.post<LoginResponse>('/api/auth/login', payload);
+    console.log("response", response.data);
     return response.data;
   },
 };
