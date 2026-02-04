@@ -115,9 +115,21 @@ export default function EditLaunchScreen() {
 
         const fotoRegistrosCollection = database.get<FotoRegistro>('foto_registros');
 
-        const currentPhotoUris = photoUris.filter((uri) => uri);
+        const allExistingFotos = await fotoRegistrosCollection
+          .query(Q.where('registro_id', registroId))
+          .fetch();
+
         const existingPhotoUris = photoUris.slice(0, existingPhotoIds.length);
         const newPhotoUris = photoUris.slice(existingPhotoIds.length);
+
+        for (let i = 0; i < allExistingFotos.length; i++) {
+          const foto = allExistingFotos[i];
+          const stillExists = existingPhotoUris.includes(foto.pathUrl);
+          
+          if (!stillExists) {
+            await foto.markAsDeleted();
+          }
+        }
 
         for (const photoUri of newPhotoUris) {
           await fotoRegistrosCollection.create((foto) => {
