@@ -1,38 +1,18 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { AuthProvider } from './src/contexts/AuthContext';
+import AppNavigator from './src/navigation/AppNavigator';
 import { testDatabaseSetup } from './src/db/__tests__/database.test';
 
 export default function App() {
-  const [dbStatus, setDbStatus] = useState<string>('Testing database...');
-
   useEffect(() => {
-    const runTest = async () => {
-      const success = await testDatabaseSetup();
-      setDbStatus(success ? '✅ Database configured!' : '❌ Database error');
-    };
-    runTest();
+    testDatabaseSetup();
   }, []);
 
   return (
-    <View style={styles.container}>
-      <Text>Expresso Consultoria App</Text>
-      <Text style={styles.status}>{dbStatus}</Text>
+    <AuthProvider>
+      <AppNavigator />
       <StatusBar style="auto" />
-    </View>
+    </AuthProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  status: {
-    marginTop: 10,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-});
