@@ -44,14 +44,13 @@ export default function LoginScreen() {
       setLoading(true);
       setError('');
 
-      signIn({
-        id: 1,
-        nome: 'Usuário Teste',
-        empresaId: 1,
-        token: 'test-token',
-      });
-    } catch (err) {
-      setError('Erro ao fazer login. Verifique suas credenciais.');
+      await signIn(data.login, data.senha);
+    } catch (err: any) {
+      const errorMessage = 
+        err.response?.data?.mensagem || 
+        err.response?.data?.error ||
+        'Erro ao fazer login. Verifique suas credenciais.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
