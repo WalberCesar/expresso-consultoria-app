@@ -10,11 +10,13 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DatePicker from 'react-native-date-picker';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import * as ImagePicker from 'expo-image-picker';
 import { launchFormSchema, LaunchFormData } from '../../schemas/launchFormSchema';
 import { database } from '../../db';
 import Registro from '../../db/models/Registro';
@@ -26,6 +28,7 @@ export default function CreateLaunchScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [tempDataHora, setTempDataHora] = useState(new Date());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [photoUris, setPhotoUris] = useState<string[]>([]);
   const { user } = useAuth();
 
   const {
@@ -76,6 +79,50 @@ export default function CreateLaunchScreen() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleTakePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    
+    if (status !== 'granted') {
+      Alert.alert('Permissão necessária', 'Precisamos de acesso à câmera para tirar fotos.');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setPhotoUris((prev) => [...prev, result.assets[0].uri]);
+    }
+  };
+
+  const handlePickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (status !== 'granted') {
+      Alert.alert('Permissão necessária', 'Precisamos de acesso à galeria para selecionar fotos.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+      allowsMultipleSelection: true,
+    });
+
+    if (!result.canceled && result.assets.length > 0) {
+      const uris = result.assets.map((asset) => asset.uri);
+      setPhotoUris((prev) => [...prev, ...uris]);
+    }
+  };
+
+  const handleRemovePhoto = (uri: string) => {
+    setPhotoUris((prev) => prev.filter((item) => item !== uri));
   };
 
   const formatDateTime = (date: Date) => {
@@ -244,7 +291,7 @@ export default function CreateLaunchScreen() {
             <View style={styles.photoButtonsContainer}>
               <TouchableOpacity
                 style={styles.photoButton}
-                onPress={() => console.log('Tirar foto')}
+                onPress={handleTakePhoto}
               >
                 <Ionicons name="camera" size={24} color="#007AFF" />
                 <Text style={styles.photoButtonText}>Tirar Foto</Text>
@@ -252,12 +299,29 @@ export default function CreateLaunchScreen() {
 
               <TouchableOpacity
                 style={styles.photoButton}
-                onPress={() => console.log('Escolher da galeria')}
+                onPress={handlePickImage}
               >
                 <Ionicons name="images" size={24} color="#007AFF" />
                 <Text style={styles.photoButtonText}>Galeria</Text>
               </TouchableOpacity>
             </View>
+
+            {/* Photo Preview */}
+            {photoUris.length > 0 && (
+              <View style={styles.photoPreviewContainer}>
+                {photoUris.map((uri, index) => (
+                  <View key={uri} style={styles.photoPreviewWrapper}>
+                    <Image source={{ uri }} style={styles.photoPreview} />
+                    <TouchableOpacity
+                      style={styles.removePhotoButton}
+                      onPress={() => handleRemovePhoto(uri)}
+                    >
+                      <Ionicons name="close-circle" size={24} color="#FF3B30" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
           </View>
 
           {/* Submit Button */}
@@ -405,6 +469,30 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#007AFF',
+  },
+  photoPreviewContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginTop: 16,
+  },
+  photoPreviewWrapper: {
+    position: 'relative',
+    width: 100,
+    height: 100,
+  },
+  photoPreview: {
+    width: 100,
+    height: 100,
+    borderRadius: 8,
+    backgroundColor: '#F0F0F0',
+  },
+  removePhotoButton: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: '#FFF',
+    borderRadius: 12,
   },
   submitButton: {
     backgroundColor: '#007AFF',
