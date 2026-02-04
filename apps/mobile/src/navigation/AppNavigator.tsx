@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import AuthNavigator from './AuthNavigator';
 import MainNavigator from './MainNavigator';
 import { useAuth } from '../contexts/AuthContext';
+import ConnectionBanner from '../components/ConnectionBanner';
 
 export default function AppNavigator() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -17,9 +18,12 @@ export default function AppNavigator() {
   }
 
   return (
-    <NavigationContainer>
-      {isAuthenticated ? <MainNavigator /> : <AuthNavigator />}
-    </NavigationContainer>
+    <>
+      <ConnectionBanner />
+      <NavigationContainer>
+        {isAuthenticated ? <MainNavigator /> : <AuthNavigator />}
+      </NavigationContainer>
+    </>
   );
 }
 
