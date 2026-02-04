@@ -7,9 +7,17 @@ import {
   KeyboardAvoidingView,
   Platform,
   StatusBar,
+  TextInput,
+  TouchableOpacity,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+type LaunchType = 'entrada' | 'saida';
 
 export default function CreateLaunchScreen() {
+  const [tipo, setTipo] = useState<LaunchType>('entrada');
+  const [descricao, setDescricao] = useState('');
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -30,7 +38,70 @@ export default function CreateLaunchScreen() {
         </View>
 
         <View style={styles.formContainer}>
-          {/* Form fields will be added in next subtasks */}
+          {/* Tipo Selector */}
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>Tipo</Text>
+            <View style={styles.typeSelector}>
+              <TouchableOpacity
+                style={[
+                  styles.typeButton,
+                  tipo === 'entrada' && styles.typeButtonActive,
+                ]}
+                onPress={() => setTipo('entrada')}
+              >
+                <Ionicons
+                  name="arrow-down-circle"
+                  size={24}
+                  color={tipo === 'entrada' ? '#FFF' : '#007AFF'}
+                />
+                <Text
+                  style={[
+                    styles.typeButtonText,
+                    tipo === 'entrada' && styles.typeButtonTextActive,
+                  ]}
+                >
+                  Entrada
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.typeButton,
+                  tipo === 'saida' && styles.typeButtonActive,
+                ]}
+                onPress={() => setTipo('saida')}
+              >
+                <Ionicons
+                  name="arrow-up-circle"
+                  size={24}
+                  color={tipo === 'saida' ? '#FFF' : '#007AFF'}
+                />
+                <Text
+                  style={[
+                    styles.typeButtonText,
+                    tipo === 'saida' && styles.typeButtonTextActive,
+                  ]}
+                >
+                  Saída
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Descrição Input */}
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>Descrição</Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Digite a descrição do lançamento"
+              placeholderTextColor="#999"
+              value={descricao}
+              onChangeText={setDescricao}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+            />
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -70,5 +141,53 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  fieldContainer: {
+    marginBottom: 24,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 12,
+  },
+  typeSelector: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  typeButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#007AFF',
+    backgroundColor: '#FFF',
+  },
+  typeButtonActive: {
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF',
+  },
+  typeButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#007AFF',
+  },
+  typeButtonTextActive: {
+    color: '#FFF',
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 8,
+    padding: 16,
+    fontSize: 16,
+    color: '#333',
+    backgroundColor: '#F9F9F9',
+    minHeight: 100,
   },
 });
