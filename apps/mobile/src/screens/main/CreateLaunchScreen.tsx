@@ -20,6 +20,7 @@ type LaunchType = 'entrada' | 'saida';
 
 export default function CreateLaunchScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [tempDataHora, setTempDataHora] = useState(new Date());
 
   const {
     control,
@@ -36,7 +37,6 @@ export default function CreateLaunchScreen() {
 
   const onSubmit = (data: LaunchFormData) => {
     console.log('Form data:', data);
-    // TODO: Save to WatermelonDB
   };
 
   const formatDateTime = (date: Date) => {
@@ -70,82 +70,133 @@ export default function CreateLaunchScreen() {
 
         <View style={styles.formContainer}>
           {/* Tipo Selector */}
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Tipo</Text>
-            <View style={styles.typeSelector}>
-              <TouchableOpacity
-                style={[
-                  styles.typeButton,
-                  tipo === 'entrada' && styles.typeButtonActive,
-                ]}
-                onPress={() => setTipo('entrada')}
-              >
-                <Ionicons
-                  name="arrow-down-circle"
-                  size={24}
-                  color={tipo === 'entrada' ? '#FFF' : '#007AFF'}
-                />
-                <Text
-                  style={[
-                    styles.typeButtonText,
-                    tipo === 'entrada' && styles.typeButtonTextActive,
-                  ]}
-                >
-                  Entrada
-                </Text>
-              </TouchableOpacity>
+          <Controller
+            control={control}
+            name="tipo"
+            render={({ field: { onChange, value } }) => (
+              <View style={styles.fieldContainer}>
+                <Text style={styles.label}>Tipo</Text>
+                <View style={styles.typeSelector}>
+                  <TouchableOpacity
+                    style={[
+                      styles.typeButton,
+                      value === 'entrada' && styles.typeButtonActive,
+                    ]}
+                    onPress={() => onChange('entrada')}
+                  >
+                    <Ionicons
+                      name="arrow-down-circle"
+                      size={24}
+                      color={value === 'entrada' ? '#FFF' : '#007AFF'}
+                    />
+                    <Text
+                      style={[
+                        styles.typeButtonText,
+                        value === 'entrada' && styles.typeButtonTextActive,
+                      ]}
+                    >
+                      Entrada
+                    </Text>
+                  </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[
-                  styles.typeButton,
-                  tipo === 'saida' && styles.typeButtonActive,
-                ]}
-                onPress={() => setTipo('saida')}
-              >
-                <Ionicons
-                  name="arrow-up-circle"
-                  size={24}
-                  color={tipo === 'saida' ? '#FFF' : '#007AFF'}
-                />
-                <Text
-                  style={[
-                    styles.typeButtonText,
-                    tipo === 'saida' && styles.typeButtonTextActive,
-                  ]}
-                >
-                  Saída
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+                  <TouchableOpacity
+                    style={[
+                      styles.typeButton,
+                      value === 'saida' && styles.typeButtonActive,
+                    ]}
+                    onPress={() => onChange('saida')}
+                  >
+                    <Ionicons
+                      name="arrow-up-circle"
+                      size={24}
+                      color={value === 'saida' ? '#FFF' : '#007AFF'}
+                    />
+                    <Text
+                      style={[
+                        styles.typeButtonText,
+                        value === 'saida' && styles.typeButtonTextActive,
+                      ]}
+                    >
+                      Saída
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                {errors.tipo && (
+                  <Text style={styles.errorText}>{errors.tipo.message}</Text>
+                )}
+              </View>
+            )}
+          />
 
           {/* Descrição Input */}
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Descrição</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Digite a descrição do lançamento"
-              placeholderTextColor="#999"
-              value={descricao}
-              onChangeText={setDescricao}
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-            />
-          </View>
+          <Controller
+            control={control}
+            name="descricao"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <View style={styles.fieldContainer}>
+                <Text style={styles.label}>Descrição</Text>
+                <TextInput
+                  style={[
+                    styles.textInput,
+                    errors.descricao && styles.textInputError,
+                  ]}
+                  placeholder="Digite a descrição do lançamento"
+                  placeholderTextColor="#999"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  multiline
+                  numberOfLines={4}
+                  textAlignVertical="top"
+                />
+                {errors.descricao && (
+                  <Text style={styles.errorText}>{errors.descricao.message}</Text>
+                )}
+              </View>
+            )}
+          />
 
           {/* Data e Hora Picker */}
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Data e Hora</Text>
-            <TouchableOpacity
-              style={styles.dateButton}
-              onPress={() => setShowDatePicker(true)}
-            >
-              <Ionicons name="calendar-outline" size={24} color="#007AFF" />
-              <Text style={styles.dateButtonText}>{formatDateTime(dataHora)}</Text>
-              <Ionicons name="chevron-forward" size={20} color="#999" />
-            </TouchableOpacity>
-          </View>
+          <Controller
+            control={control}
+            name="dataHora"
+            render={({ field: { onChange, value } }) => (
+              <View style={styles.fieldContainer}>
+                <Text style={styles.label}>Data e Hora</Text>
+                <TouchableOpacity
+                  style={styles.dateButton}
+                  onPress={() => {
+                    setTempDataHora(value);
+                    setShowDatePicker(true);
+                  }}
+                >
+                  <Ionicons name="calendar-outline" size={24} color="#007AFF" />
+                  <Text style={styles.dateButtonText}>{formatDateTime(value)}</Text>
+                  <Ionicons name="chevron-forward" size={20} color="#999" />
+                </TouchableOpacity>
+                {errors.dataHora && (
+                  <Text style={styles.errorText}>{errors.dataHora.message}</Text>
+                )}
+                <DatePicker
+                  modal
+                  open={showDatePicker}
+                  date={tempDataHora}
+                  mode="datetime"
+                  locale="pt-BR"
+                  title="Selecione a data e hora"
+                  confirmText="Confirmar"
+                  cancelText="Cancelar"
+                  onConfirm={(date) => {
+                    setShowDatePicker(false);
+                    onChange(date);
+                  }}
+                  onCancel={() => {
+                    setShowDatePicker(false);
+                  }}
+                />
+              </View>
+            )}
+          />
 
           {/* Photo Buttons */}
           <View style={styles.fieldContainer}>
@@ -168,25 +219,16 @@ export default function CreateLaunchScreen() {
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* Submit Button */}
+          <TouchableOpacity
+            style={styles.submitButton}
+            onPress={handleSubmit(onSubmit)}
+          >
+            <Text style={styles.submitButtonText}>Salvar Lançamento</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
-
-      <DatePicker
-        modal
-        open={showDatePicker}
-        date={dataHora}
-        mode="datetime"
-        locale="pt-BR"
-        title="Selecione a data e hora"
-        confirmText="Confirmar"
-        cancelText="Cancelar"
-        onConfirm={(date) => {
-          setShowDatePicker(false);
-          setDataHora(date);
-        }}
-        onCancel={() => {
-          setShowDatePicker(false);
-        }}
       />
     </KeyboardAvoidingView>
   );
@@ -243,23 +285,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-  dateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: '#DDD',
-    borderRadius: 8,
-    backgroundColor: '#F9F9F9',
-  },
-  dateButtonText: {
-    flex: 1,
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
-  },
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 16,
@@ -290,6 +315,14 @@ const styles = StyleSheet.create({
     color: '#333',
     backgroundColor: '#F9F9F9',
     minHeight: 100,
+  },
+  textInputError: {
+    borderColor: '#FF3B30',
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#FF3B30',
+    marginTop: 8,
   },
   dateButton: {
     flexDirection: 'row',
@@ -329,5 +362,17 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#007AFF',
+  },
+  submitButton: {
+    backgroundColor: '#007AFF',
+    borderRadius: 8,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  submitButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFF',
   },
 });
