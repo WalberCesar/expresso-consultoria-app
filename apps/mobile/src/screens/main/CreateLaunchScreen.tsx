@@ -11,12 +11,25 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import DatePicker from 'react-native-date-picker';
 
 type LaunchType = 'entrada' | 'saida';
 
 export default function CreateLaunchScreen() {
   const [tipo, setTipo] = useState<LaunchType>('entrada');
   const [descricao, setDescricao] = useState('');
+  const [dataHora, setDataHora] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const formatDateTime = (date: Date) => {
+    return date.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
 
   return (
     <KeyboardAvoidingView
@@ -102,8 +115,39 @@ export default function CreateLaunchScreen() {
               textAlignVertical="top"
             />
           </View>
+
+          {/* Data e Hora Picker */}
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>Data e Hora</Text>
+            <TouchableOpacity
+              style={styles.dateButton}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <Ionicons name="calendar-outline" size={24} color="#007AFF" />
+              <Text style={styles.dateButtonText}>{formatDateTime(dataHora)}</Text>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
+
+      <DatePicker
+        modal
+        open={showDatePicker}
+        date={dataHora}
+        mode="datetime"
+        locale="pt-BR"
+        title="Selecione a data e hora"
+        confirmText="Confirmar"
+        cancelText="Cancelar"
+        onConfirm={(date) => {
+          setShowDatePicker(false);
+          setDataHora(date);
+        }}
+        onCancel={() => {
+          setShowDatePicker(false);
+        }}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -159,6 +203,23 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+  dateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 8,
+    backgroundColor: '#F9F9F9',
+  },
+  dateButtonText: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+  },
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 16,
