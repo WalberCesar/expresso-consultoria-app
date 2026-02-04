@@ -128,6 +128,28 @@ export default function CreateLaunchScreen() {
               <Ionicons name="chevron-forward" size={20} color="#999" />
             </TouchableOpacity>
           </View>
+
+          {/* Photo Buttons */}
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>Fotos</Text>
+            <View style={styles.photoButtonsContainer}>
+              <TouchableOpacity
+                style={styles.photoButton}
+                onPress={() => console.log('Tirar foto')}
+              >
+                <Ionicons name="camera" size={24} color="#007AFF" />
+                <Text style={styles.photoButtonText}>Tirar Foto</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.photoButton}
+                onPress={() => console.log('Escolher da galeria')}
+              >
+                <Ionicons name="images" size={24} color="#007AFF" />
+                <Text style={styles.photoButtonText}>Galeria</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </ScrollView>
 
@@ -250,5 +272,44 @@ const styles = StyleSheet.create({
     color: '#333',
     backgroundColor: '#F9F9F9',
     minHeight: 100,
+  },
+  dateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 8,
+    backgroundColor: '#F9F9F9',
+  },
+  dateButtonText: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+  },
+  photoButtonsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  photoButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#007AFF',
+    backgroundColor: '#FFF',
+  },
+  photoButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#007AFF',
   },
 });
