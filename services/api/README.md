@@ -11,7 +11,7 @@ Backend API para o sistema de lançamentos offline-first.
 
 ## 📋 Pré-requisitos
 
-- Node.js 18+ 
+- Node.js 18+
 - npm ou yarn
 
 ## 🔧 Instalação
@@ -40,15 +40,19 @@ npm run type-check
 ## 📡 Endpoints
 
 ### Health Check
+
 ```
 GET /health
 ```
+
 Retorna o status do servidor e informações de uptime.
 
 ### Root
+
 ```
 GET /
 ```
+
 Retorna informações básicas da API e endpoints disponíveis.
 
 ## 🏗️ Estrutura do Projeto
