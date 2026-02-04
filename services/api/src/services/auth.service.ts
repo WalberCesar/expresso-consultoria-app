@@ -1,4 +1,5 @@
 import knex from '../database/connection';
+import bcrypt from 'bcryptjs';
 import { User } from '../types/user.types';
 
 export class AuthService {
@@ -8,5 +9,9 @@ export class AuthService {
       .first();
 
     return user || null;
+  }
+
+  async validatePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
+    return bcrypt.compare(plainPassword, hashedPassword);
   }
 }

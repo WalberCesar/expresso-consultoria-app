@@ -33,8 +33,20 @@ export class AuthController {
         return;
       }
 
+      const isPasswordValid = await this.authService.validatePassword(
+        senha,
+        user.senha
+      );
+
+      if (!isPasswordValid) {
+        res.status(401).json({
+          error: 'Credenciais inválidas'
+        });
+        return;
+      }
+
       res.status(501).json({
-        message: 'Validação de senha - implementação pendente'
+        message: 'Geração de JWT - implementação pendente'
       });
     } catch (error) {
       next(error);
