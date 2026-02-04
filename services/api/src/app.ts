@@ -1,6 +1,7 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
+import syncRoutes from './routes/sync.routes';
 
 interface AppError extends Error {
   statusCode?: number;
@@ -49,6 +50,9 @@ class App {
 
     // User routes (protected)
     this.app.use('/api/users', userRoutes);
+
+    // Sync routes (protected)
+    this.app.use('/api/sync', syncRoutes);
   }
 
   private initializeErrorHandling(): void {
