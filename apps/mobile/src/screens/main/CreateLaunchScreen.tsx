@@ -12,14 +12,32 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DatePicker from 'react-native-date-picker';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { launchFormSchema, LaunchFormData } from '../../schemas/launchFormSchema';
 
 type LaunchType = 'entrada' | 'saida';
 
 export default function CreateLaunchScreen() {
-  const [tipo, setTipo] = useState<LaunchType>('entrada');
-  const [descricao, setDescricao] = useState('');
-  const [dataHora, setDataHora] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LaunchFormData>({
+    resolver: zodResolver(launchFormSchema),
+    defaultValues: {
+      tipo: 'entrada',
+      descricao: '',
+      dataHora: new Date(),
+    },
+  });
+
+  const onSubmit = (data: LaunchFormData) => {
+    console.log('Form data:', data);
+    // TODO: Save to WatermelonDB
+  };
 
   const formatDateTime = (date: Date) => {
     return date.toLocaleString('pt-BR', {
