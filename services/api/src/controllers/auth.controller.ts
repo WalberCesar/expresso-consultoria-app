@@ -45,9 +45,9 @@ export class AuthController {
         return;
       }
 
-      res.status(501).json({
-        message: 'Geração de JWT - implementação pendente'
-      });
+      const response = await this.authService.generateToken(user);
+
+      res.status(200).json(response);
     } catch (error) {
       next(error);
     }
