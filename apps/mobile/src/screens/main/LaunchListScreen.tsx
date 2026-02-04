@@ -8,41 +8,12 @@ import {
   StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
-interface MockRegistro {
-  id: string;
-  tipo: string;
-  descricao: string;
-  data_hora: Date;
-  _status: 'synced' | 'created' | 'updated';
-}
-
-const MOCK_DATA: MockRegistro[] = [
-  {
-    id: '1',
-    tipo: 'entrada',
-    descricao: 'Chegada ao local',
-    data_hora: new Date('2025-01-15T08:30:00'),
-    _status: 'synced',
-  },
-  {
-    id: '2',
-    tipo: 'saida',
-    descricao: 'Saída para almoço',
-    data_hora: new Date('2025-01-15T12:00:00'),
-    _status: 'created',
-  },
-  {
-    id: '3',
-    tipo: 'entrada',
-    descricao: 'Retorno do almoço',
-    data_hora: new Date('2025-01-15T13:30:00'),
-    _status: 'synced',
-  },
-];
+import { withObservables } from '@nozbe/watermelondb/react';
+import { database } from '../../db';
+import { Registro } from '../../db/models/Registro';
 
 interface ListItemProps {
-  item: MockRegistro;
+  item: Registro;
 }
 
 function ListItem({ item }: ListItemProps) {
@@ -103,20 +74,24 @@ function ListItem({ item }: ListItemProps) {
       <Text style={styles.itemDescription}>{item.descricao}</Text>
       
       <View style={styles.itemFooter}>
-        <Text style={styles.itemDate}>{formatDate(item.data_hora)}</Text>
-        <Text style={styles.itemTime}>{formatTime(item.data_hora)}</Text>
+        <Text style={styles.itemDate}>{formatDate(item.dataHora)}</Text>
+        <Text style={styles.itemTime}>{formatTime(item.dataHora)}</Text>
       </View>
     </TouchableOpacity>
   );
 }
 
-export default function LaunchListScreen() {
+interface LaunchListScreenProps {
+  registros: Registro[];
+}
+
+function LaunchListScreen({ registros }: LaunchListScreenProps) {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
       
       <FlatList
-        data={MOCK_DATA}
+        data={registros}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <ListItem item={item} />}
         contentContainerStyle={styles.listContent}
@@ -130,6 +105,12 @@ export default function LaunchListScreen() {
     </View>
   );
 }
+
+const enhance = withObservables([], () => ({
+  registros: database.get<Registro>('registros').query().observe(),
+}));
+
+export default enhance(LaunchListScreen);
 
 const styles = StyleSheet.create({
   container: {
