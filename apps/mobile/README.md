@@ -59,12 +59,14 @@ npm run web
 ### Usando Emulador/Simulador
 
 **Android:**
+
 ```bash
 # Certifique-se de ter o Android Studio instalado e configurado
 npm run android
 ```
 
 **iOS (somente macOS):**
+
 ```bash
 # Certifique-se de ter o Xcode instalado
 npm run ios

@@ -7,64 +7,70 @@ Estrutura do banco de dados MySQL para o sistema offline-first.
 ### Tabelas
 
 #### 1. empresas
+
 Armazena informações das empresas no sistema (multi-tenancy).
 
-| Campo | Tipo | Constraints |
-|-------|------|-------------|
-| id | INT (PK) | Auto-increment |
-| nome | VARCHAR(255) | NOT NULL |
-| cnpj | VARCHAR(18) | UNIQUE |
-| created_at | TIMESTAMP | Auto |
-| updated_at | TIMESTAMP | Auto |
+| Campo      | Tipo         | Constraints    |
+| ---------- | ------------ | -------------- |
+| id         | INT (PK)     | Auto-increment |
+| nome       | VARCHAR(255) | NOT NULL       |
+| cnpj       | VARCHAR(18)  | UNIQUE         |
+| created_at | TIMESTAMP    | Auto           |
+| updated_at | TIMESTAMP    | Auto           |
 
 #### 2. usuarios
+
 Usuários do sistema vinculados a empresas.
 
-| Campo | Tipo | Constraints |
-|-------|------|-------------|
-| id | INT (PK) | Auto-increment |
-| nome | VARCHAR(255) | NOT NULL |
-| email | VARCHAR(255) | NOT NULL, UNIQUE |
-| senha | VARCHAR(255) | NOT NULL (hash) |
-| empresa_id | INT (FK) | NOT NULL, CASCADE |
-| created_at | TIMESTAMP | Auto |
-| updated_at | TIMESTAMP | Auto |
+| Campo      | Tipo         | Constraints       |
+| ---------- | ------------ | ----------------- |
+| id         | INT (PK)     | Auto-increment    |
+| nome       | VARCHAR(255) | NOT NULL          |
+| email      | VARCHAR(255) | NOT NULL, UNIQUE  |
+| senha      | VARCHAR(255) | NOT NULL (hash)   |
+| empresa_id | INT (FK)     | NOT NULL, CASCADE |
+| created_at | TIMESTAMP    | Auto              |
+| updated_at | TIMESTAMP    | Auto              |
 
 #### 3. registros
+
 Lançamentos de compra/venda (sincronização offline).
 
-| Campo | Tipo | Constraints |
-|-------|------|-------------|
-| id | INT (PK) | Auto-increment |
-| uuid | VARCHAR(36) | NOT NULL, UNIQUE, INDEX |
-| empresa_id | INT (FK) | NOT NULL, CASCADE |
-| usuario_id | INT (FK) | NOT NULL, CASCADE |
-| tipo | ENUM | 'COMPRA', 'VENDA' |
-| data_hora | DATETIME | NOT NULL |
-| descricao | TEXT | NOT NULL |
-| sincronizado | BOOLEAN | DEFAULT false |
-| created_at | TIMESTAMP | Auto |
-| updated_at | TIMESTAMP | Auto |
+| Campo        | Tipo        | Constraints             |
+| ------------ | ----------- | ----------------------- |
+| id           | INT (PK)    | Auto-increment          |
+| uuid         | VARCHAR(36) | NOT NULL, UNIQUE, INDEX |
+| empresa_id   | INT (FK)    | NOT NULL, CASCADE       |
+| usuario_id   | INT (FK)    | NOT NULL, CASCADE       |
+| tipo         | ENUM        | 'COMPRA', 'VENDA'       |
+| data_hora    | DATETIME    | NOT NULL                |
+| descricao    | TEXT        | NOT NULL                |
+| sincronizado | BOOLEAN     | DEFAULT false           |
+| created_at   | TIMESTAMP   | Auto                    |
+| updated_at   | TIMESTAMP   | Auto                    |
 
 **Índices:**
+
 - `uuid` (único)
 - `[empresa_id, usuario_id]` (composto)
 - `sincronizado`
 
 #### 4. foto_registros
+
 Fotos anexadas aos registros.
 
-| Campo | Tipo | Constraints |
-|-------|------|-------------|
-| id | INT (PK) | Auto-increment |
-| uuid | VARCHAR(36) | NOT NULL, UNIQUE, INDEX |
-| registro_id | INT (FK) | NOT NULL, CASCADE |
-| url_foto | VARCHAR(500) | NOT NULL |
-| path_local | VARCHAR(500) | NULL |
-| created_at | TIMESTAMP | Auto |
-| updated_at | TIMESTAMP | Auto |
+| Campo       | Tipo         | Constraints             |
+| ----------- | ------------ | ----------------------- |
+| id          | INT (PK)     | Auto-increment          |
+| uuid        | VARCHAR(36)  | NOT NULL, UNIQUE, INDEX |
+| registro_id | INT (FK)     | NOT NULL, CASCADE       |
+| url_foto    | VARCHAR(500) | NOT NULL                |
+| path_local  | VARCHAR(500) | NULL                    |
+| created_at  | TIMESTAMP    | Auto                    |
+| updated_at  | TIMESTAMP    | Auto                    |
 
 **Índices:**
+
 - `registro_id`
 
 ## 🔑 Relacionamentos

@@ -1,4 +1,5 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
+import authRoutes from './routes/auth.routes';
 
 interface AppError extends Error {
   statusCode?: number;
@@ -41,6 +42,9 @@ class App {
         version: '1.0.0',
       });
     });
+
+    // Authentication routes
+    this.app.use('/api/auth', authRoutes);
   }
 
   private initializeErrorHandling(): void {

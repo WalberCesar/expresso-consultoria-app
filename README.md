@@ -5,6 +5,7 @@ Sistema full-stack para gestão de lançamentos com suporte offline-first, desen
 ## 📋 Visão Geral
 
 Aplicação composta por:
+
 - **Mobile App**: React Native (Expo) com sincronização offline
 - **Backend API**: Node.js/Express com MySQL
 
@@ -23,6 +24,7 @@ Aplicação composta por:
 ## 🚀 Stack Tecnológica
 
 ### Mobile (apps/mobile)
+
 - React Native + Expo SDK
 - TypeScript
 - WatermelonDB (banco de dados local offline-first)
@@ -31,6 +33,7 @@ Aplicação composta por:
 - Expo Camera + Image Picker
 
 ### Backend (services/api)
+
 - Node.js + Express
 - TypeScript
 - MySQL
@@ -51,4 +54,4 @@ Consulte a [documentação completa](./docs/prd.md) para detalhes sobre requisit
 
 ## 🔧 Desenvolvimento
 
-*Instruções de setup serão adicionadas nas próximas tarefas.*
+_Instruções de setup serão adicionadas nas próximas tarefas._
