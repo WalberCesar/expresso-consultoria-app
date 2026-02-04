@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { PullRequest, PushRequest } from '../types/sync.types';
 import { SyncService } from '../services/sync.service';
+import { PullRequestSchema, PushRequestSchema } from '../validators/sync.validators';
+import { ZodError } from 'zod';
 
 export class SyncController {
   private syncService: SyncService;
@@ -22,7 +24,24 @@ export class SyncController {
         return;
       }
 
-      const { lastPulledAt } = req.body;
+      const validationResult = PullRequestSchema.safeParse(req.body);
+
+      if (!validationResult.success) {
+        res.status(400).json({
+          error: 'Dados de requisição inválidos',
+          details: validationResult.error.issues
+        });
+        return;
+      }
+
+      const { lastPulledAt } = validationResult.data;
+
+      if (lastPulledAt !== null && (lastPulledAt < 0 || !Number.isFinite(lastPulledAt))) {
+        res.status(400).json({
+          error: 'lastPulledAt deve ser um timestamp válido'
+        });
+        return;
+      }
 
       const result = await this.syncService.pullChanges(
         lastPulledAt,
@@ -48,7 +67,24 @@ export class SyncController {
         return;
       }
 
-      const { changes } = req.body;
+      const validationResult = PushRequestSchema.safeParse(req.body);
+
+      if (!validationResult.success) {
+        res.status(400).json({
+          error: 'Dados de requisição inválidos',
+          details: validationResult.error.issues
+        });
+        return;
+      }
+
+      const { changes } = validationResult.data;
+
+      if (!changes || Object.keys(changes).length === 0) {
+        res.status(400).json({
+          error: 'Changes não pode estar vazio'
+        });
+        return;
+      }
 
       const result = await this.syncService.pushChanges(
         changes,
@@ -57,6 +93,13 @@ export class SyncController {
 
       res.status(200).json(result);
     } catch (error) {
+      if (error instanceof ZodError) {
+        res.status(400).json({
+          error: 'Erro de validação',
+          details: error.issues
+        });
+        return;
+      }
       next(error);
     }
   }

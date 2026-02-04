@@ -60,107 +60,113 @@ export class SyncService {
   ): Promise<PushResponse> {
     const rejectedIds: string[] = [];
 
-    for (const tableName of Object.keys(changes)) {
-      const tableChanges = changes[tableName];
+    try {
+      await knex.transaction(async (trx) => {
+        for (const tableName of Object.keys(changes)) {
+          const tableChanges = changes[tableName];
 
-      if (!tableChanges) {
-        continue;
-      }
-
-      if (tableName === 'registros') {
-        for (const record of tableChanges.created) {
-          try {
-            // Multi-tenancy: empresa_id sempre forçado do token JWT
-            await knex('registros').insert({
-              uuid: record.id,
-              empresa_id: empresaId,
-              usuario_id: record.usuario_id,
-              tipo: record.tipo,
-              data_hora: new Date(record.data_hora),
-              descricao: record.descricao,
-              sincronizado: true,
-              created_at: new Date(record.created_at),
-              updated_at: new Date(record.updated_at)
-            });
-          } catch (error) {
-            rejectedIds.push(record.id);
+          if (!tableChanges) {
+            continue;
           }
-        }
 
-        for (const record of tableChanges.updated) {
-          try {
-            // Multi-tenancy: update apenas em registros da própria empresa
-            await knex('registros')
-              .where('uuid', record.id)
-              .where('empresa_id', empresaId)
-              .update({
-                usuario_id: record.usuario_id,
-                tipo: record.tipo,
-                data_hora: new Date(record.data_hora),
-                descricao: record.descricao,
-                sincronizado: true,
-                updated_at: new Date(record.updated_at)
-              });
-          } catch (error) {
-            rejectedIds.push(record.id);
-          }
-        }
-      }
-
-      if (tableName === 'foto_registros') {
-        for (const record of tableChanges.created) {
-          try {
-            // Multi-tenancy: validar que o registro pertence à empresa antes de inserir foto
-            const registro = await knex('registros')
-              .where('uuid', record.registro_id)
-              .where('empresa_id', empresaId)
-              .first();
-
-            if (!registro) {
-              rejectedIds.push(record.id);
-              continue;
+          if (tableName === 'registros') {
+            for (const record of tableChanges.created) {
+              try {
+                // Multi-tenancy: empresa_id sempre forçado do token JWT
+                await trx('registros').insert({
+                  uuid: record.id,
+                  empresa_id: empresaId,
+                  usuario_id: record.usuario_id,
+                  tipo: record.tipo,
+                  data_hora: new Date(record.data_hora),
+                  descricao: record.descricao,
+                  sincronizado: true,
+                  created_at: new Date(record.created_at),
+                  updated_at: new Date(record.updated_at)
+                });
+              } catch (error) {
+                rejectedIds.push(record.id);
+              }
             }
 
-            await knex('foto_registros').insert({
-              uuid: record.id,
-              registro_id: registro.id,
-              url_foto: record.url_foto,
-              path_local: record.path_local,
-              created_at: new Date(record.created_at),
-              updated_at: new Date(record.updated_at)
-            });
-          } catch (error) {
-            rejectedIds.push(record.id);
+            for (const record of tableChanges.updated) {
+              try {
+                // Multi-tenancy: update apenas em registros da própria empresa
+                await trx('registros')
+                  .where('uuid', record.id)
+                  .where('empresa_id', empresaId)
+                  .update({
+                    usuario_id: record.usuario_id,
+                    tipo: record.tipo,
+                    data_hora: new Date(record.data_hora),
+                    descricao: record.descricao,
+                    sincronizado: true,
+                    updated_at: new Date(record.updated_at)
+                  });
+              } catch (error) {
+                rejectedIds.push(record.id);
+              }
+            }
           }
-        }
 
-        for (const record of tableChanges.updated) {
-          try {
-            // Multi-tenancy: atualizar apenas fotos cujo registro pertence à empresa
-            const fotoRegistro = await knex('foto_registros')
-              .join('registros', 'foto_registros.registro_id', 'registros.id')
-              .where('foto_registros.uuid', record.id)
-              .where('registros.empresa_id', empresaId)
-              .select('foto_registros.id')
-              .first();
+          if (tableName === 'foto_registros') {
+            for (const record of tableChanges.created) {
+              try {
+                // Multi-tenancy: validar que o registro pertence à empresa antes de inserir foto
+                const registro = await trx('registros')
+                  .where('uuid', record.registro_id)
+                  .where('empresa_id', empresaId)
+                  .first();
 
-            if (!fotoRegistro) {
-              rejectedIds.push(record.id);
-              continue;
+                if (!registro) {
+                  rejectedIds.push(record.id);
+                  continue;
+                }
+
+                await trx('foto_registros').insert({
+                  uuid: record.id,
+                  registro_id: registro.id,
+                  url_foto: record.url_foto,
+                  path_local: record.path_local,
+                  created_at: new Date(record.created_at),
+                  updated_at: new Date(record.updated_at)
+                });
+              } catch (error) {
+                rejectedIds.push(record.id);
+              }
             }
 
-            await knex('foto_registros')
-              .where('uuid', record.id)
-              .update({
-                url_foto: record.url_foto,
-                path_local: record.path_local,
-                updated_at: new Date(record.updated_at)
-              });
-          } catch (error) {
-            rejectedIds.push(record.id);
+            for (const record of tableChanges.updated) {
+              try {
+                // Multi-tenancy: atualizar apenas fotos cujo registro pertence à empresa
+                const fotoRegistro = await trx('foto_registros')
+                  .join('registros', 'foto_registros.registro_id', 'registros.id')
+                  .where('foto_registros.uuid', record.id)
+                  .where('registros.empresa_id', empresaId)
+                  .select('foto_registros.id')
+                  .first();
+
+                if (!fotoRegistro) {
+                  rejectedIds.push(record.id);
+                  continue;
+                }
+
+                await trx('foto_registros')
+                  .where('uuid', record.id)
+                  .update({
+                    url_foto: record.url_foto,
+                    path_local: record.path_local,
+                    updated_at: new Date(record.updated_at)
+                  });
+              } catch (error) {
+                rejectedIds.push(record.id);
+              }
+            }
           }
         }
-      }
+      });
+    } catch (error) {
+      throw new Error(`Erro na sincronização: ${error instanceof Error ? error.message : 'Desconhecido'}`);
     }
 
     return {
