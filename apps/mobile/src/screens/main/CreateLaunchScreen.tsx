@@ -20,6 +20,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { launchFormSchema, LaunchFormData } from '../../schemas/launchFormSchema';
 import { database } from '../../db';
 import Registro from '../../db/models/Registro';
+import FotoRegistro from '../../db/models/FotoRegistro';
 import { useAuth } from '../../contexts/AuthContext';
 
 type LaunchType = 'entrada' | 'saida';
@@ -55,14 +56,26 @@ export default function CreateLaunchScreen() {
 
     try {
       await database.write(async () => {
-        await database.get<Registro>('registros').create((registro) => {
-          registro.empresaId = user.empresaId;
-          registro.usuarioId = user.id;
-          registro.tipo = data.tipo;
-          registro.dataHora = data.dataHora;
-          registro.descricao = data.descricao;
-          registro.sincronizado = false;
+        const registro = await database.get<Registro>('registros').create((r) => {
+          r.empresaId = user.empresaId;
+          r.usuarioId = user.id;
+          r.tipo = data.tipo;
+          r.dataHora = data.dataHora;
+          r.descricao = data.descricao;
+          r.sincronizado = false;
         });
+
+        // Salvar as fotos associadas ao registro
+        if (photoUris.length > 0) {
+          const fotoRegistrosCollection = database.get<FotoRegistro>('foto_registros');
+          
+          for (const photoUri of photoUris) {
+            await fotoRegistrosCollection.create((foto) => {
+              foto.registroId = registro.id;
+              foto.pathUrl = photoUri;
+            });
+          }
+        }
       });
 
       Alert.alert('Sucesso', 'Lançamento criado com sucesso!', [
@@ -70,6 +83,7 @@ export default function CreateLaunchScreen() {
           text: 'OK',
           onPress: () => {
             reset();
+            setPhotoUris([]);
           },
         },
       ]);
@@ -109,7 +123,6 @@ export default function CreateLaunchScreen() {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      allowsEditing: true,
       aspect: [4, 3],
       quality: 0.8,
       allowsMultipleSelection: true,
