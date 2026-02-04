@@ -13,6 +13,7 @@ export class SyncService {
       ? new Date(lastPulledAt) 
       : new Date(0);
 
+    // Multi-tenancy: todas as queries filtram por empresa_id
     const registrosCreated = await knex('registros')
       .where('empresa_id', empresaId)
       .where('created_at', '>', lastPulledDate)
@@ -24,6 +25,7 @@ export class SyncService {
       .whereRaw('updated_at > created_at')
       .select('*');
 
+    // Multi-tenancy: foto_registros filtrados via JOIN com registros.empresa_id
     const fotoRegistrosCreated = await knex('foto_registros')
       .join('registros', 'foto_registros.registro_id', 'registros.id')
       .where('registros.empresa_id', empresaId)
@@ -68,6 +70,7 @@ export class SyncService {
       if (tableName === 'registros') {
         for (const record of tableChanges.created) {
           try {
+            // Multi-tenancy: empresa_id sempre forçado do token JWT
             await knex('registros').insert({
               uuid: record.id,
               empresa_id: empresaId,
@@ -86,6 +89,7 @@ export class SyncService {
 
         for (const record of tableChanges.updated) {
           try {
+            // Multi-tenancy: update apenas em registros da própria empresa
             await knex('registros')
               .where('uuid', record.id)
               .where('empresa_id', empresaId)
@@ -106,6 +110,7 @@ export class SyncService {
       if (tableName === 'foto_registros') {
         for (const record of tableChanges.created) {
           try {
+            // Multi-tenancy: validar que o registro pertence à empresa antes de inserir foto
             const registro = await knex('registros')
               .where('uuid', record.registro_id)
               .where('empresa_id', empresaId)
@@ -131,6 +136,19 @@ export class SyncService {
 
         for (const record of tableChanges.updated) {
           try {
+            // Multi-tenancy: atualizar apenas fotos cujo registro pertence à empresa
+            const fotoRegistro = await knex('foto_registros')
+              .join('registros', 'foto_registros.registro_id', 'registros.id')
+              .where('foto_registros.uuid', record.id)
+              .where('registros.empresa_id', empresaId)
+              .select('foto_registros.id')
+              .first();
+
+            if (!fotoRegistro) {
+              rejectedIds.push(record.id);
+              continue;
+            }
+
             await knex('foto_registros')
               .where('uuid', record.id)
               .update({
