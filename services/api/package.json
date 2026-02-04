@@ -1,14 +1,23 @@
 {
   "name": "api",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Backend API for Expresso Consultoria - Offline-First System",
+  "main": "dist/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
   },
-  "keywords": [],
+  "keywords": [
+    "express",
+    "typescript",
+    "nodejs",
+    "api"
+  ],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "express": "^5.2.1"
   },
