@@ -27,7 +27,7 @@ export class SyncController {
         return;
       }
 
-      // WatermelonDB envia parâmetros via query string
+
       const lastPulledAtParam = req.query.lastPulledAt as string | undefined;
 
       const lastPulledAt = lastPulledAtParam ? parseInt(lastPulledAtParam, 10) : null;

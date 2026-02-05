@@ -15,7 +15,7 @@ export class SyncService {
 
     const isFirstSync = !lastPulledAt;
 
-    // Multi-tenancy: usuarios filtrados por empresa_id
+   
     const usuariosCreated = await knex('usuarios')
       .where('empresa_id', empresaId)
       .where('created_at', '>', lastPulledDate)
@@ -27,7 +27,6 @@ export class SyncService {
       .whereRaw('updated_at > created_at')
       .select('*');
 
-    // Multi-tenancy: todas as queries filtram por empresa_id
     const registrosCreated = await knex('registros')
       .where('empresa_id', empresaId)
       .where('created_at', '>', lastPulledDate)
@@ -39,7 +38,7 @@ export class SyncService {
       .whereRaw('updated_at > created_at')
       .select('*');
 
-    // Multi-tenancy: foto_registros filtrados via JOIN com registros.empresa_id
+   
     const fotoRegistrosCreated = await knex('foto_registros')
       .join('registros', 'foto_registros.registro_id', 'registros.id')
       .where('registros.empresa_id', empresaId)
@@ -92,7 +91,7 @@ export class SyncService {
           if (tableName === 'usuarios') {
             for (const record of tableChanges.created) {
               try {
-                // Multi-tenancy: empresa_id sempre forçado do token JWT
+                
                 const usuarioData = {
                   uuid: record.id,
                   empresa_id: empresaId,
@@ -127,7 +126,7 @@ export class SyncService {
 
             for (const record of tableChanges.updated) {
               try {
-                // Multi-tenancy: update apenas em usuarios da própria empresa
+                
                 await trx('usuarios')
                   .where('uuid', record.id)
                   .where('empresa_id', empresaId)
@@ -145,7 +144,7 @@ export class SyncService {
           if (tableName === 'registros') {
             for (const record of tableChanges.created) {
               try {
-                // Mapear tipo do mobile para o banco (entrada -> COMPRA, saida -> VENDA)
+               
                 const tipoMapeado = record.tipo === 'entrada' ? 'COMPRA' : 
                                    record.tipo === 'saida' ? 'VENDA' : 
                                    record.tipo.toUpperCase();
@@ -180,7 +179,7 @@ export class SyncService {
                       updated_at: new Date(record.updated_at)
                     });
                 } else {
-                  // Multi-tenancy: empresa_id sempre forçado do token JWT
+                  
                   await trx('registros').insert(registroData);
                 }
               } catch (error) {
@@ -191,12 +190,12 @@ export class SyncService {
 
             for (const record of tableChanges.updated) {
               try {
-                // Mapear tipo do mobile para o banco
+                
                 const tipoMapeado = record.tipo === 'entrada' ? 'COMPRA' : 
                                    record.tipo === 'saida' ? 'VENDA' : 
                                    record.tipo.toUpperCase();
                 
-                // Multi-tenancy: update apenas em registros da própria empresa
+                
                 await trx('registros')
                   .where('uuid', record.id)
                   .where('empresa_id', empresaId)
@@ -217,7 +216,7 @@ export class SyncService {
           if (tableName === 'foto_registros') {
             for (const record of tableChanges.created) {
               try {
-                // Multi-tenancy: validar que o registro pertence à empresa antes de inserir foto
+                
                 const registro = await trx('registros')
                   .where('uuid', record.registro_id)
                   .where('empresa_id', empresaId)
@@ -244,7 +243,7 @@ export class SyncService {
 
             for (const record of tableChanges.updated) {
               try {
-                // Multi-tenancy: atualizar apenas fotos cujo registro pertence à empresa
+                
                 const fotoRegistro = await trx('foto_registros')
                   .join('registros', 'foto_registros.registro_id', 'registros.id')
                   .where('foto_registros.uuid', record.id)
@@ -272,7 +271,7 @@ export class SyncService {
 
             for (const recordId of tableChanges.deleted) {
               try {
-                // Multi-tenancy: deletar apenas fotos cujo registro pertence à empresa
+                
                 const fotoRegistro = await trx('foto_registros')
                   .join('registros', 'foto_registros.registro_id', 'registros.id')
                   .where('foto_registros.uuid', recordId)
@@ -316,17 +315,17 @@ export class SyncService {
           return;
         }
         
-        // Mapear tipo do banco para o mobile (COMPRA -> entrada, VENDA -> saida)
+      
         if (key === 'tipo' && record[key]) {
           rawRecord[key] = record[key] === 'COMPRA' ? 'entrada' : 
                           record[key] === 'VENDA' ? 'saida' : 
                           record[key].toLowerCase();
         }
-        // Mapear path_local do banco para path_url do mobile
+       
         else if (key === 'path_local' && record[key]) {
           rawRecord['path_url'] = record[key];
         }
-        // Mapear url_foto também para path_url se path_local não existir
+        
         else if (key === 'url_foto' && record[key] && !record.path_local) {
           rawRecord['path_url'] = record[key];
         }

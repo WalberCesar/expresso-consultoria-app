@@ -1,7 +1,7 @@
 import App from './app';
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
-const HOST = '0.0.0.0'; // Permite conexões de qualquer interface de rede
+const HOST = '0.0.0.0';
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
 const appInstance = new App();
@@ -14,14 +14,14 @@ server.listen(PORT, HOST, () => {
   console.log(`🌐 Network access: http://192.168.100.28:${PORT}/health`);
 });
 
-// Handle unhandled promise rejections
+
 process.on('unhandledRejection', (reason: Error) => {
   console.error('UNHANDLED REJECTION! 💥 Shutting down...');
   console.error(reason.name, reason.message);
   process.exit(1);
 });
 
-// Handle uncaught exceptions
+
 process.on('uncaughtException', (error: Error) => {
   console.error('UNCAUGHT EXCEPTION! 💥 Shutting down...');
   console.error(error.name, error.message);

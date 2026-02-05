@@ -19,15 +19,15 @@ class App {
   }
 
   private initializeMiddlewares(): void {
-    // Parse JSON bodies
+    
     this.app.use(express.json());
     
-    // Parse URL-encoded bodies
+   
     this.app.use(express.urlencoded({ extended: true }));
   }
 
   private initializeRoutes(): void {
-    // Health check endpoint
+    
     this.app.get('/health', (_req: Request, res: Response) => {
       res.status(200).json({
         status: 'success',
@@ -36,7 +36,7 @@ class App {
       });
     });
 
-    // Root endpoint
+  
     this.app.get('/', (_req: Request, res: Response) => {
       res.status(200).json({
         status: 'success',
@@ -45,18 +45,18 @@ class App {
       });
     });
 
-    // Authentication routes
+   
     this.app.use('/api/auth', authRoutes);
 
-    // User routes (protected)
+    
     this.app.use('/api/users', userRoutes);
 
-    // Sync routes (protected)
+    
     this.app.use('/api/sync', syncRoutes);
   }
 
   private initializeErrorHandling(): void {
-    // 404 handler - must come before error handler
+    
     this.app.use((_req: Request, res: Response) => {
       res.status(404).json({
         status: 'error',
@@ -64,7 +64,7 @@ class App {
       });
     });
 
-    // Global error handler - must be last
+    
     this.app.use((err: AppError, _req: Request, res: Response, _next: NextFunction) => {
       const statusCode = err.statusCode || 500;
       const message = err.isOperational ? err.message : 'Internal Server Error';
