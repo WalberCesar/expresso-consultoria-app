@@ -17,16 +17,11 @@ export interface LoginResponse {
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
-    // const payload = {
-    //   email: "usuario.a@empresaa.com",
-    //   senha: "senha123"
-    // };
 
     const payload = {
-      email: "usuario.b@empresab.com",
-      senha: "senha456"
+      email: credentials.login,
+      senha: credentials.senha,
     };
-
     console.log("payload", payload);
 
     const response = await api.post<LoginResponse>('/api/auth/login', payload);

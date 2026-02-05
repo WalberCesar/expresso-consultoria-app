@@ -51,8 +51,8 @@ export default function FormLogin() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      login: 'usuario.a@empresaa.com',
-      senha: 'senha123',
+      login: '',
+      senha: '',
     },
   });
 
