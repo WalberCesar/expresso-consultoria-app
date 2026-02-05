@@ -95,7 +95,11 @@ export default function FormEditLaunch({ registroId }: FormEditLaunchProps) {
         message: 'Não foi possível carregar o lançamento',
         icon: 'alert-circle',
         iconColor: '#EF4444',
-        onModalClose: () => navigation.goBack(),
+        onModalClose: () => {
+          if (navigation.canGoBack()) {
+            navigation.goBack();
+          }
+        },
       });
       setModalVisible(true);
     } finally {
@@ -159,7 +163,11 @@ export default function FormEditLaunch({ registroId }: FormEditLaunchProps) {
         message: 'Lançamento atualizado com sucesso!',
         icon: 'checkmark-circle',
         iconColor: '#10B981',
-        onModalClose: () => navigation.goBack(),
+        onModalClose: () => {
+          if (navigation.canGoBack()) {
+            navigation.goBack();
+          }
+        },
       });
       setModalVisible(true);
     } catch (error) {
@@ -348,7 +356,11 @@ export default function FormEditLaunch({ registroId }: FormEditLaunchProps) {
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={[styles.button, styles.cancelButton]}
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            if (navigation.canGoBack()) {
+              navigation.goBack();
+            }
+          }}
           disabled={isSubmitting}
         >
           <Text style={styles.cancelButtonText}>Cancelar</Text>
