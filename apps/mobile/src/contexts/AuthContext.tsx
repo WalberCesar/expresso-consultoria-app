@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authService } from '../services/auth.service';
+import { database } from '../db';
 
 const USER_STORAGE_KEY = '@expresso:user';
 
@@ -59,6 +60,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
         token: response.token,
       };
 
+     
+      if (user && user.id !== userData.id) {
+        await database.write(async () => {
+          await database.unsafeResetDatabase();
+        });
+      }
+
       await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
       setUser(userData);
     } catch (error) {
@@ -69,10 +77,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signOut = async () => {
     try {
+      // Limpar o banco de dados local antes de deslogar
+      await database.write(async () => {
+        await database.unsafeResetDatabase();
+      });
+      
       await AsyncStorage.removeItem(USER_STORAGE_KEY);
       setUser(null);
     } catch (error) {
-      console.error('Error removing user from storage:', error);
+      console.error('Error during signOut:', error);
     }
   };
 

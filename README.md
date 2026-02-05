@@ -5,10 +5,12 @@ Sistema full-stack para gestão de lançamentos financeiros com suporte offline-
 ## 📋 Requisitos
 
 ### Sistema Operacional
+
 - **Backend**: Linux, macOS ou Windows
 - **Mobile**: Android (API 24+) ou iOS (13+)
 
 ### Software Necessário
+
 - **Node.js**: versão 18.x ou superior
 - **npm**: versão 8.x ou superior (incluído com Node.js)
 - **MySQL**: versão 8.0 ou superior
@@ -17,6 +19,7 @@ Sistema full-stack para gestão de lançamentos financeiros com suporte offline-
 - **Dispositivo físico**: Android ou iOS com Expo Go instalado (recomendado)
 
 ### Ferramentas de Desenvolvimento
+
 - **Git**: para clonar o repositório
 - **Expo CLI**: instalado automaticamente como dependência do projeto
 
@@ -51,6 +54,7 @@ docker ps
 ```
 
 O MySQL estará disponível em `localhost:3306` com as seguintes credenciais:
+
 - **Host**: localhost
 - **Port**: 3306
 - **Database**: expresso_consultoria_dev
@@ -98,6 +102,7 @@ npm run seed
 ```
 
 Isso criará 2 empresas e 2 usuários de teste:
+
 - **Empresa A**: usuario.a@empresaa.com / senha123
 - **Empresa B**: usuario.b@empresab.com / senha456
 
@@ -201,6 +206,7 @@ npm run ios
 4. Observe que os lançamentos pendentes agora mostram status **"Sincronizado"** (ícone de check verde)
 
 **Ou**, aguarde a sincronização automática que ocorre:
+
 - No login
 - Ao navegar entre telas
 - Usando o gesto de "pull to refresh" (puxar para baixo)
@@ -285,6 +291,7 @@ expresso-consultoria-app/
 ## 🚀 Tecnologias Utilizadas
 
 ### Backend
+
 - **Node.js** + **Express**: Framework web
 - **TypeScript**: Tipagem estática
 - **MySQL**: Banco de dados relacional
@@ -294,6 +301,7 @@ expresso-consultoria-app/
 - **bcrypt**: Hash de senhas
 
 ### Mobile
+
 - **React Native** + **Expo SDK 54**: Framework mobile
 - **TypeScript**: Tipagem estática
 - **WatermelonDB**: Banco de dados local (SQLite) com suporte offline
@@ -319,10 +327,10 @@ expresso-consultoria-app/
 
 Após executar `npm run seed` no backend:
 
-| Email                      | Senha    | Empresa   |
-|----------------------------|----------|-----------|
-| usuario.a@empresaa.com     | senha123 | Empresa A |
-| usuario.b@empresab.com     | senha456 | Empresa B |
+| Email                  | Senha    | Empresa   |
+| ---------------------- | -------- | --------- |
+| usuario.a@empresaa.com | senha123 | Empresa A |
+| usuario.b@empresab.com | senha456 | Empresa B |
 
 ## 📝 Notas Importantes
 
@@ -337,17 +345,20 @@ Após executar `npm run seed` no backend:
 ### Troubleshooting
 
 **Erro de conexão no mobile:**
+
 - Verifique se o backend está rodando
 - Confirme que o IP no `.env` do mobile está correto
 - Certifique-se de que o dispositivo e o computador estão na **mesma rede Wi-Fi**
 - Desabilite firewalls que possam bloquear a porta 3000
 
 **Erro ao rodar migrations:**
+
 - Verifique se o MySQL está rodando
 - Confirme as credenciais no `.env`
 - Se usar Docker, execute `docker-compose down -v` e suba novamente
 
 **App não carrega no Expo Go:**
+
 - Limpe o cache: `cd apps/mobile && npx expo start -c`
 - Reinstale as dependências: `rm -rf node_modules && npm install`
 
