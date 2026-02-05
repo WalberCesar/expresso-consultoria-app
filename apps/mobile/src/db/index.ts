@@ -3,7 +3,7 @@ import { Database } from '@nozbe/watermelondb';
 import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
 
 import { schema } from './schema';
-import { Registro, FotoRegistro } from './models';
+import { Usuario, Registro, FotoRegistro } from './models';
 
 const adapter = new SQLiteAdapter({
   schema,
@@ -15,5 +15,5 @@ const adapter = new SQLiteAdapter({
 
 export const database = new Database({
   adapter,
-  modelClasses: [Registro, FotoRegistro],
+  modelClasses: [Usuario, Registro, FotoRegistro],
 });

@@ -13,13 +13,27 @@ export class SyncService {
       ? new Date(lastPulledAt) 
       : new Date(0);
 
+    const isFirstSync = !lastPulledAt;
+
+    // Multi-tenancy: usuarios filtrados por empresa_id
+    const usuariosCreated = await knex('usuarios')
+      .where('empresa_id', empresaId)
+      .where('created_at', '>', lastPulledDate)
+      .select('*');
+
+    const usuariosUpdated = isFirstSync ? [] : await knex('usuarios')
+      .where('empresa_id', empresaId)
+      .where('updated_at', '>', lastPulledDate)
+      .whereRaw('updated_at > created_at')
+      .select('*');
+
     // Multi-tenancy: todas as queries filtram por empresa_id
     const registrosCreated = await knex('registros')
       .where('empresa_id', empresaId)
       .where('created_at', '>', lastPulledDate)
       .select('*');
 
-    const registrosUpdated = await knex('registros')
+    const registrosUpdated = isFirstSync ? [] : await knex('registros')
       .where('empresa_id', empresaId)
       .where('updated_at', '>', lastPulledDate)
       .whereRaw('updated_at > created_at')
@@ -32,12 +46,18 @@ export class SyncService {
       .where('foto_registros.created_at', '>', lastPulledDate)
       .select('foto_registros.*');
 
-    const fotoRegistrosUpdated = await knex('foto_registros')
+    const fotoRegistrosUpdated = isFirstSync ? [] : await knex('foto_registros')
       .join('registros', 'foto_registros.registro_id', 'registros.id')
       .where('registros.empresa_id', empresaId)
       .where('foto_registros.updated_at', '>', lastPulledDate)
       .whereRaw('foto_registros.updated_at > foto_registros.created_at')
       .select('foto_registros.*');
+
+    changes.usuarios = {
+      created: this.mapToRawRecords(usuariosCreated),
+      updated: this.mapToRawRecords(usuariosUpdated),
+      deleted: []
+    };
 
     changes.registros = {
       created: this.mapToRawRecords(registrosCreated),
@@ -67,6 +87,59 @@ export class SyncService {
 
           if (!tableChanges) {
             continue;
+          }
+
+          if (tableName === 'usuarios') {
+            for (const record of tableChanges.created) {
+              try {
+                // Multi-tenancy: empresa_id sempre forçado do token JWT
+                const usuarioData = {
+                  uuid: record.id,
+                  empresa_id: empresaId,
+                  nome: record.nome,
+                  email: record.email,
+                  created_at: new Date(record.created_at),
+                  updated_at: new Date(record.updated_at)
+                };
+
+                const existingUsuario = await trx('usuarios')
+                  .where('uuid', record.id)
+                  .where('empresa_id', empresaId)
+                  .first();
+
+                if (existingUsuario) {
+                  await trx('usuarios')
+                    .where('uuid', record.id)
+                    .where('empresa_id', empresaId)
+                    .update({
+                      nome: record.nome,
+                      email: record.email,
+                      updated_at: new Date(record.updated_at)
+                    });
+                } else {
+                  await trx('usuarios').insert(usuarioData);
+                }
+              } catch (error) {
+                console.error('Erro ao inserir/atualizar usuario:', error);
+                rejectedIds.push(record.id);
+              }
+            }
+
+            for (const record of tableChanges.updated) {
+              try {
+                // Multi-tenancy: update apenas em usuarios da própria empresa
+                await trx('usuarios')
+                  .where('uuid', record.id)
+                  .where('empresa_id', empresaId)
+                  .update({
+                    nome: record.nome,
+                    email: record.email,
+                    updated_at: new Date(record.updated_at)
+                  });
+              } catch (error) {
+                rejectedIds.push(record.id);
+              }
+            }
           }
 
           if (tableName === 'registros') {
