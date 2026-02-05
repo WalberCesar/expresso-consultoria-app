@@ -5,6 +5,7 @@ export type AuthStackParamList = {
 export type MainTabParamList = {
   LaunchList: undefined;
   CreateLaunch: undefined;
+  UserProfile: undefined;
 };
 
 export type MainStackParamList = {

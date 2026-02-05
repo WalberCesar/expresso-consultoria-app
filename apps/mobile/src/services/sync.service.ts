@@ -49,16 +49,18 @@ export async function syncDatabase({ database, token }: SyncParams): Promise<voi
       }
     },
     pushChanges: async ({ changes, lastPulledAt }) => {
-      // Armazenar IDs dos registros que serão enviados
+     
       const registroIdsParaSincronizar: string[] = [];
       
-      // Coletar IDs dos registros para atualizar status local
-      if (changes.registros) {
-        changes.registros.created.forEach((r: any) => {
+    
+      const changesAny = changes as any;
+      const registrosChanges = changesAny.registros;
+      if (registrosChanges) {
+        registrosChanges.created?.forEach((r: any) => {
           registroIdsParaSincronizar.push(r.id);
         });
         
-        changes.registros.updated?.forEach((r: any) => {
+        registrosChanges.updated?.forEach((r: any) => {
           registroIdsParaSincronizar.push(r.id);
         });
       }
@@ -77,7 +79,7 @@ export async function syncDatabase({ database, token }: SyncParams): Promise<voi
           }
         );
         
-        // Atualizar registros locais para sincronizado: true
+      
         if (registroIdsParaSincronizar.length > 0) {
           await database.write(async () => {
             const registrosCollection = database.get<Registro>('registros');

@@ -1,89 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   FlatList,
   StyleSheet,
-  TouchableOpacity,
   StatusBar,
   RefreshControl,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import NetInfo from '@react-native-community/netinfo';
 import { withObservables } from '@nozbe/watermelondb/react';
 import { database } from '../../db';
 import { Registro } from '../../db/models/';
 import { syncDatabase } from '../../services/sync.service';
 import { useAuth } from '../../contexts/AuthContext';
-import { MainStackParamList } from '../../navigation/types';
-
-type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
-
-interface ListItemProps {
-  item: Registro;
-}
-
-function ListItem({ item }: ListItemProps) {
-  const navigation = useNavigation<NavigationProp>();
-  const getStatusColor = () => {
-    return item.sincronizado ? '#4CAF50' : '#FFC107';
-  };
-
-  const getStatusIcon = () => {
-    return item.sincronizado ? 'checkmark-circle' : 'time';
-  };
-
-  const getStatusText = () => {
-    return item.sincronizado ? 'Sincronizado' : 'Pendente';
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
-  };
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('pt-BR', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  return (
-    <TouchableOpacity 
-      style={styles.itemContainer}
-      onPress={() => navigation.navigate('EditLaunch', { registroId: item.id })}
-    >
-      <View style={styles.itemHeader}>
-        <View style={styles.itemTypeContainer}>
-          <Text style={styles.itemType}>{item.tipo.toUpperCase()}</Text>
-        </View>
-        <View style={styles.statusContainer}>
-          <Ionicons
-            name={getStatusIcon()}
-            size={16}
-            color={getStatusColor()}
-          />
-          <Text style={[styles.statusText, { color: getStatusColor() }]}>
-            {getStatusText()}
-          </Text>
-        </View>
-      </View>
-      
-      <Text style={styles.itemDescription}>{item.descricao}</Text>
-      
-      <View style={styles.itemFooter}>
-        <Text style={styles.itemDate}>{formatDate(item.dataHora)}</Text>
-        <Text style={styles.itemTime}>{formatTime(item.dataHora)}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-}
+import CardLaunch from '../../components/CardLaunch';
+import Modal from '../../components/Modal';
 
 interface LaunchListScreenProps {
   registros: Registro[];
@@ -91,11 +23,44 @@ interface LaunchListScreenProps {
 
 function LaunchListScreen({ registros }: LaunchListScreenProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: '',
+    message: '',
+    icon: 'checkmark-circle' as keyof typeof Ionicons.glyphMap,
+    iconColor: '#10B981',
+  });
   const { user } = useAuth();
 
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setIsOnline(state.isConnected ?? false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   const handleRefresh = async () => {
+    if (!isOnline) {
+      setModalConfig({
+        title: 'Sem conexão',
+        message: 'Verifique sua conexão com a internet',
+        icon: 'cloud-offline',
+        iconColor: '#EF4444',
+      });
+      setModalVisible(true);
+      return;
+    }
+
     if (!user) {
-      Alert.alert('Erro', 'Usuário não autenticado');
+      setModalConfig({
+        title: 'Erro',
+        message: 'Usuário não autenticado',
+        icon: 'alert-circle',
+        iconColor: '#EF4444',
+      });
+      setModalVisible(true);
       return;
     }
 
@@ -107,10 +72,22 @@ function LaunchListScreen({ registros }: LaunchListScreenProps) {
         token: user.token,
       });
     
-      Alert.alert('Sucesso', 'Dados sincronizados com sucesso!');
+      setModalConfig({
+        title: 'Sucesso',
+        message: 'Dados sincronizados com sucesso!',
+        icon: 'checkmark-circle',
+        iconColor: '#10B981',
+      });
+      setModalVisible(true);
     } catch (error) {
       console.error('Erro ao sincronizar:', error);
-      Alert.alert('Erro', 'Não foi possível sincronizar os dados');
+      setModalConfig({
+        title: 'Erro',
+        message: 'Não foi possível sincronizar os dados',
+        icon: 'alert-circle',
+        iconColor: '#EF4444',
+      });
+      setModalVisible(true);
     } finally {
       setIsRefreshing(false);
     }
@@ -123,7 +100,7 @@ function LaunchListScreen({ registros }: LaunchListScreenProps) {
       <FlatList
         data={registros}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <ListItem item={item} />}
+        renderItem={({ item }) => <CardLaunch item={item} />}
         contentContainerStyle={styles.listContent}
         refreshControl={
           <RefreshControl
@@ -139,6 +116,15 @@ function LaunchListScreen({ registros }: LaunchListScreenProps) {
             <Text style={styles.emptyText}>Nenhum lançamento encontrado</Text>
           </View>
         }
+      />
+
+      <Modal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        icon={modalConfig.icon}
+        iconColor={modalConfig.iconColor}
       />
     </View>
   );
@@ -160,62 +146,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
-  },
-  itemContainer: {
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  itemHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  itemTypeContainer: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  itemType: {
-    color: '#FFF',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  itemDescription: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 8,
-  },
-  itemFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  itemDate: {
-    fontSize: 14,
-    color: '#666',
-  },
-  itemTime: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
   },
   emptyContainer: {
     flex: 1,

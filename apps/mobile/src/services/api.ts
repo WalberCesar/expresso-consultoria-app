@@ -12,7 +12,7 @@ const api = axios.create({
   },
 });
 
-// Interceptor para logs de requisição
+
 api.interceptors.request.use(
   (config) => {
     console.log(`➡️ ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
