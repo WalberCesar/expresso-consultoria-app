@@ -145,7 +145,10 @@ function LaunchListScreen({ registros }: LaunchListScreenProps) {
 }
 
 const enhance = withObservables([], () => ({
-  registros: database.get<Registro>('registros').query().observe(),
+  registros: database
+    .get<Registro>('registros')
+    .query()
+    .observeWithColumns(['descricao', 'tipo', 'data_hora', 'sincronizado']),
 }));
 
 export default enhance(LaunchListScreen);

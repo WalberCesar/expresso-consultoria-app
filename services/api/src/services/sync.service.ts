@@ -77,8 +77,7 @@ export class SyncService {
                                    record.tipo === 'saida' ? 'VENDA' : 
                                    record.tipo.toUpperCase();
                 
-                // Multi-tenancy: empresa_id sempre forçado do token JWT
-                await trx('registros').insert({
+                const registroData = {
                   uuid: record.id,
                   empresa_id: empresaId,
                   usuario_id: record.usuario_id,
@@ -88,9 +87,31 @@ export class SyncService {
                   sincronizado: true,
                   created_at: new Date(record.created_at),
                   updated_at: new Date(record.updated_at)
-                });
+                };
+
+                const existingRecord = await trx('registros')
+                  .where('uuid', record.id)
+                  .where('empresa_id', empresaId)
+                  .first();
+
+                if (existingRecord) {
+                  await trx('registros')
+                    .where('uuid', record.id)
+                    .where('empresa_id', empresaId)
+                    .update({
+                      usuario_id: record.usuario_id,
+                      tipo: tipoMapeado,
+                      data_hora: new Date(record.data_hora),
+                      descricao: record.descricao,
+                      sincronizado: true,
+                      updated_at: new Date(record.updated_at)
+                    });
+                } else {
+                  // Multi-tenancy: empresa_id sempre forçado do token JWT
+                  await trx('registros').insert(registroData);
+                }
               } catch (error) {
-                console.error('Erro ao inserir registro:', error);
+                console.error('Erro ao inserir/atualizar registro:', error);
                 rejectedIds.push(record.id);
               }
             }
@@ -173,6 +194,30 @@ export class SyncService {
               } catch (error) {
                 console.error('Erro ao atualizar foto_registro:', error);
                 rejectedIds.push(record.id);
+              }
+            }
+
+            for (const recordId of tableChanges.deleted) {
+              try {
+                // Multi-tenancy: deletar apenas fotos cujo registro pertence à empresa
+                const fotoRegistro = await trx('foto_registros')
+                  .join('registros', 'foto_registros.registro_id', 'registros.id')
+                  .where('foto_registros.uuid', recordId)
+                  .where('registros.empresa_id', empresaId)
+                  .select('foto_registros.id')
+                  .first();
+
+                if (!fotoRegistro) {
+                  rejectedIds.push(recordId);
+                  continue;
+                }
+
+                await trx('foto_registros')
+                  .where('uuid', recordId)
+                  .delete();
+              } catch (error) {
+                console.error('Erro ao deletar foto_registro:', error);
+                rejectedIds.push(recordId);
               }
             }
           }
