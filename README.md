@@ -1,6 +1,31 @@
-# Sistema de Lançamentos Offline-First
+<div align="center">
 
-Sistema full-stack para gestão de lançamentos financeiros com suporte offline-first, desenvolvido em monorepo. Permite cadastro de lançamentos (entrada/saída) com fotos, funcionando offline e sincronizando automaticamente quando online.
+# 📱 Sistema de Lançamentos Offline-First
+
+<p align="center">
+  <img src="https://img.shields.io/badge/React_Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React Native"/>
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"/>
+  <img src="https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js"/>
+  <img src="https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL"/>
+  <img src="https://img.shields.io/badge/Expo-1B1F23?style=for-the-badge&logo=expo&logoColor=white" alt="Expo"/>
+</p>
+
+<p align="center">
+  Sistema full-stack para gestão de lançamentos financeiros com suporte offline-first, desenvolvido em monorepo.<br/>
+  Permite cadastro de lançamentos (entrada/saída) com fotos, funcionando offline e sincronizando automaticamente quando online.
+</p>
+
+<p align="center">
+  <strong>✨ Funcionalidades Principais</strong>
+</p>
+
+<p align="center">
+  🔐 Autenticação Multi-tenant • 📊 Gestão de Lançamentos • 📸 Múltiplas Fotos • 🔄 Sincronização Offline • 🌐 API REST
+</p>
+
+---
+
+</div>
 
 ## 📋 Requisitos
 
