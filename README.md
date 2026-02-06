@@ -386,7 +386,3 @@ Após executar `npm run seed` no backend:
 
 - Limpe o cache: `cd apps/mobile && npx expo start -c`
 - Reinstale as dependências: `rm -rf node_modules && npm install`
-
-## 📧 Suporte
-
-Para dúvidas ou problemas, consulte a documentação completa em [docs/prd.md](./docs/prd.md).
